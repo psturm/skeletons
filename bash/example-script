@@ -1,0 +1,80 @@
+#!/bin/bash
+# This is a bash skeleton.
+#
+# Includes 'shellcheck' annotations.
+
+set -Eeuo pipefail
+shopt -s inherit_errexit
+#set -x # Enable for full debug
+
+
+# basic setup and library imports
+readonly BASE_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+readonly SCRIPT_NAME=${0##*/}
+# shellcheck source=./lib.sh
+source "${BASE_DIR}/lib.sh"
+
+
+# help & usage (used in library)
+readonly USAGE="${SCRIPT_NAME} [-hopv] [-O <value>]"
+readonly HELP="${SCRIPT_NAME} — does nothing useful, it's just an example
+
+Usage:
+  ${USAGE}
+
+Arguments:
+
+Options:
+  -h           Show this message
+  -o           Set 'option1' flag
+  -O <value>   Set value for 'other_option'
+  -p           Show the options
+  -v           Verbose output
+"
+
+
+parse_args() {
+  # getopts can only parse short options
+
+  expr "$*" : ".*--help" > /dev/null && help && exit 0
+
+  while getopts 'hoO:pv' c; do
+    case ${c} in
+      h) help; exit 0 ;;
+      o) option1=1 ;;
+      O) other_option=${OPTARG} ;;
+      p) print_options=1 ;;
+      v) set_verbosity 2 ;;
+      *) usage ;;
+    esac
+  done
+}
+
+print_options() {
+  echo "-- Options ---------------------------"
+  echo "option1:      ${option1}"
+  echo "other_option: ${other_option}"
+  echo "verbosity:    ${VERBOSITY}"
+  echo "--------------------------------------"
+}
+
+# defaults for options and arguments
+declare option1=0
+other_option=""
+print_options=0
+
+
+# main
+parse_args "$@"
+[[ ${print_options} -eq 1 ]] && print_options
+
+echo_v "Some DEFAULT output"
+echo_v "Normal output" 1
+echo_v "Verbose output, only visible, when called with '-v'" 2
+
+
+
+
+## Examples to trigger shellcheck errors:
+#echo $1            # Unquoted variables (warning)
+#for f in "*.ogg"   # Incorrectly quoted 'for' loops (error)

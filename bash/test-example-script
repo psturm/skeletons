@@ -1,0 +1,47 @@
+#!/bin/bash
+# Test 'example-script' with shellcheck
+# https://github.com/koalaman/shellcheck
+
+set -Eeuo pipefail
+shopt -s inherit_errexit
+
+readonly BASE_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+
+# config
+declare script_to_test="${BASE_DIR}/example-script"
+
+
+validate_required_tools () {
+  command -v shellcheck >/dev/null 2>&1 || {
+    echo >&2 "No installation of 'shellcheck' found."
+    echo >&2
+    echo >&2 "Try: apt-get install shellcheck"
+    echo >&2 "Or check https://github.com/koalaman/shellcheck#installing"
+  }
+}
+
+test_script() {
+  local -r script="${1}"
+  echo "Testing script ${script} .."
+  set +e
+  shellcheck --shell=bash --external-sources "${script}"
+  readonly test_result="$?"
+  set -e
+
+  return ${test_result}
+}
+
+# main
+validate_required_tools
+
+if test_script "${script_to_test}"; then
+  echo "SUCCESS"
+else
+  echo
+  echo >&2 "FAILED"
+fi
+
+
+
+
+
